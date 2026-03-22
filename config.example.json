@@ -1,0 +1,40 @@
+{
+    "llama_server_path": "/path/to/llama.cpp/build/bin/llama-server",
+    "classifier_port": 9100,
+    "specialist_port": 9101,
+    "gpu_device": 0,
+    "vram_total_mb": 8192,
+    "vram_reserved_mb": 2048,
+    "server_startup_timeout": 60,
+    "inference_timeout": 120,
+    "classifier": {
+        "path": "/path/to/models/SmolLM2-1.7B-Instruct-Q8_0.gguf",
+        "vram_mb": 1700,
+        "description": "SmolLM2-1.7B — fast intent classifier",
+        "context_size": 512,
+        "gpu_layers": 99
+    },
+    "specialists": {
+        "code": {
+            "path": "/path/to/models/Qwen2.5-Coder-7B-Instruct-Q4_K_M.gguf",
+            "vram_mb": 4400,
+            "description": "Code generation and debugging",
+            "context_size": 2048,
+            "gpu_layers": 99
+        },
+        "reasoning": {
+            "path": "/path/to/models/Qwen2.5-7B-Instruct-Q4_K_M.gguf",
+            "vram_mb": 4400,
+            "description": "Analysis, reasoning, and explanation",
+            "context_size": 2048,
+            "gpu_layers": 99
+        },
+        "general": {
+            "path": "/path/to/models/SmolLM2-1.7B-Instruct-Q8_0.gguf",
+            "vram_mb": 1700,
+            "description": "General conversation and simple tasks",
+            "context_size": 2048,
+            "gpu_layers": 99
+        }
+    }
+}

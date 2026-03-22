@@ -1,0 +1,118 @@
+{
+  "timestamp": "2026-03-22T13:19:00Z",
+  "hardware": {
+    "gpu": "AMD Radeon Pro WX 7100",
+    "gpu_arch": "Polaris (GCN 4th gen)",
+    "vram": "8 GB GDDR5",
+    "driver": "Mesa RADV (radv_polaris10)",
+    "vulkan_api": "1.3+",
+    "cpu": "AMD Ryzen 7 5800XT (8C/16T)",
+    "ram": "64 GB DDR4",
+    "os": "NixOS 26.05 (Linux 6.18)",
+    "llama_cpp": "b1 (commit 23fbfcb), built with -DGGML_VULKAN=ON"
+  },
+  "vram_baseline": {
+    "total_mb": 8192,
+    "used_mb": 2974,
+    "note": "Desktop compositor (Hyprland Wayland) + VisionBridge service running"
+  },
+  "classifier": {
+    "model": "SmolLM2-1.7B-Instruct-Q8_0.gguf",
+    "file_size_mb": 1700,
+    "vram_delta_mb": 1779,
+    "startup_seconds": 17.0,
+    "note": "First load includes Vulkan shader compilation. Subsequent loads faster.",
+    "classification": {
+      "avg_ms": 110,
+      "min_ms": 78,
+      "max_ms": 193,
+      "p50_ms": 90,
+      "note": "First query ~193ms (warm-up), subsequent queries 78-116ms"
+    }
+  },
+  "specialists": {
+    "code": {
+      "model": "TERMINAL-LFM2.5-1.2B-Q8_0.gguf",
+      "params": "1.2B",
+      "quantization": "Q8_0",
+      "file_size_mb": 1200,
+      "vram_delta_mb": 1200,
+      "cold_load_seconds": 12.0,
+      "generation": {
+        "tok_per_sec": 102.0,
+        "avg_inference_ms": 1213,
+        "max_tokens_tested": 128,
+        "note": "Consistent across multiple runs"
+      }
+    },
+    "reasoning": {
+      "model": "Nemotron-Terminal-8B.Q4_K_M.gguf",
+      "params": "8B",
+      "quantization": "Q4_K_M",
+      "file_size_mb": 4700,
+      "vram_delta_mb": 4700,
+      "cold_load_seconds": 47.6,
+      "generation": {
+        "tok_per_sec": 1.8,
+        "avg_inference_ms": 72936,
+        "max_tokens_tested": 128,
+        "note": "Polaris GPU bottleneck — 8B models are impractical on GCN. Recommend RDNA or smaller models."
+      }
+    },
+    "general": {
+      "model": "LFM2.5-1.2B-Instruct-Q8_0.gguf",
+      "params": "1.2B",
+      "quantization": "Q8_0",
+      "file_size_mb": 1200,
+      "vram_delta_mb": 1200,
+      "cold_load_seconds": 12.0,
+      "generation": {
+        "tok_per_sec": 101.7,
+        "avg_inference_ms": 580,
+        "max_tokens_tested": 128,
+        "note": "59 tokens in 580ms"
+      }
+    }
+  },
+  "routing": {
+    "end_to_end": [
+      {
+        "query": "Write a function to check if a number is prime",
+        "category": "code",
+        "specialist": "code",
+        "classify_ms": 160,
+        "load_ms": 12015,
+        "inference_ms": 1213,
+        "total_ms": 13388,
+        "cold_load": true
+      },
+      {
+        "query": "What is the meaning of life?",
+        "category": "reasoning",
+        "specialist": "reasoning",
+        "classify_ms": 93,
+        "load_ms": 48089,
+        "inference_ms": 72936,
+        "total_ms": 121118,
+        "cold_load": true
+      },
+      {
+        "query": "Implement a linked list in Python",
+        "category": "code",
+        "specialist": "code",
+        "classify_ms": 78,
+        "load_ms": 12630,
+        "inference_ms": 1218,
+        "total_ms": 13926,
+        "cold_load": true
+      }
+    ]
+  },
+  "key_findings": [
+    "SmolLM2-1.7B classification averages 110ms — well under 300ms target",
+    "1.2B specialists achieve ~100 tok/s on Polaris via Vulkan — practical for interactive use",
+    "8B models (Q4_K_M) are too slow on Polaris (~1.8 tok/s) — recommend staying <=3B on GCN cards",
+    "Cold-load penalty is 12s for 1.2B models — hot specialist reuse eliminates this for sequential queries",
+    "Total VRAM: classifier (1.7GB) + 1.2B specialist (1.2GB) = 2.9GB, fits easily in 8GB with display overhead"
+  ]
+}

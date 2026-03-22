@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local
+
+# User-specific config (ship config.example.json instead)
+config.json
+
+# Models (large files — download separately)
+models/
+*.gguf
+
+# Benchmark results are tracked, but local scratch is not
+benchmarks/results/*.tmp
