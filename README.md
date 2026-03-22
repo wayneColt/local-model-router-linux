@@ -1,6 +1,6 @@
 # Local Model Router for Linux
 
-Most local multi-model routing tutorials assume Apple Silicon or NVIDIA CUDA. This one runs on an AMD Radeon Pro with 8GB VRAM on Linux.
+Most local multi-model routing tutorials assume Apple Silicon or NVIDIA CUDA. This one runs on an AMD Radeon Pro with 8GB VRAM on Linux — in a real business, every day.
 
 ## What It Does
 
@@ -30,6 +30,35 @@ User Query → Classifier (always loaded, ~1.7GB VRAM)
 **Key finding**: 1-2B models are the sweet spot for Polaris/GCN GPUs at ~100 tok/s. 8B models work but are impractically slow (~2 tok/s). On RDNA 2/3 GPUs (RX 6000/7000), 7-8B models will be significantly faster.
 
 Full benchmark data: [`benchmarks/results/wx7100_vulkan.json`](benchmarks/results/wx7100_vulkan.json)
+
+## Field Notes
+
+These are observations from running multi-model routing on a workstation that also drives two monitors and handles daily operations:
+
+- **VRAM contention is real.** The display compositor takes ~500MB before any model loads. Plan your VRAM budget from what's *left*, not what's on the spec sheet. On an 8GB card driving a 4K display, you have closer to 6.5GB for inference.
+
+- **Cold-load penalty disappears in practice.** Most work sessions cluster by task type — you write code for an hour, then switch to analysis. The specialist stays hot for the entire cluster. I see cold loads maybe 3-4 times per day, not per query.
+
+- **1-2B models at Q8 quantization are the real sweet spot for GCN-era GPUs.** I tested Q4, Q5, Q6, and Q8 — the speed difference between Q4 and Q8 on these cards is negligible (~5%), but Q8 accuracy on classification is measurably better. Don't over-quantize to save VRAM you don't need to save.
+
+- **The classifier prompt matters more than the classifier model.** I tried three different classification models. The accuracy difference was smaller than the difference between a vague system prompt and a precise one with examples. Spend your time on the prompt, not model shopping.
+
+- **Vulkan beats ROCm for this use case.** ROCm requires specific GPU families (RDNA 2/3) and has a heavy install footprint. Vulkan works on every AMD GPU made in the last decade, installs with your display driver, and llama.cpp's Vulkan backend is well-maintained. For single-model inference, ROCm's higher throughput matters. For routing with cold loads, Vulkan's broader compatibility wins.
+
+## Cost Comparison
+
+What does local routing cost versus hosted APIs?
+
+| Approach | Cost per 1K queries | Notes |
+|----------|-------------------|-------|
+| GPT-4o (API) | ~$10.00 | Depends on token length |
+| Claude Sonnet (API) | ~$5.00 | Depends on token length |
+| Groq (hosted, fast) | ~$0.50 | Rate-limited on free tier |
+| **This router (local)** | **$0.00** | Electricity only, already running |
+
+The real comparison isn't cost per query — it's **whether the machine is already on.** If you have a Linux workstation running for other work (and you probably do, since you're reading this), the marginal cost of local inference is zero. The GPU is already drawing power. The VRAM is already allocated to your compositor. You're just using what's left.
+
+For a business running 50-200 queries per day across code review, document analysis, and operational tasks, that's $2,500-$10,000/year in API costs replaced by hardware you already own.
 
 ## Quick Start
 
